@@ -8,5 +8,10 @@
         "id": 2,
         "place": "Hussain Sagar",
         "visited": "yes"
+    },
+    {
+        "id": 3,
+        "place": "Cyber Towers",
+        "visited": "yes"
     }
 ]
