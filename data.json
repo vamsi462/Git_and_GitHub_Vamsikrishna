@@ -1,0 +1,12 @@
+[
+    {
+        "id": 1,
+        "place": "Charminar",
+        "visited": "yes"
+    },
+    {
+        "id": 2,
+        "place": "Hussain Sagar",
+        "visited": "yes"
+    }
+]
