@@ -29,5 +29,19 @@ def success():
     return "<h1>Data submitted successfully</h1>"
 
 
+@app.route("/submittodoitem", methods=["POST"])
+def submit_todo():
+    item_name = request.form.get("itemName")
+    item_description = request.form.get("itemDescription")
+
+    client = MongoClient(MONGO_URI)
+    db = client["test_database"]
+    collection = db["test_collection"]
+
+    collection.insert_one({"itemName": item_name, "itemDescription": item_description})
+
+    return "Item added successfully!"
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
