@@ -1,14 +1,17 @@
-from flask import Flask, redirect, render_template, request
+import os
+
+from dotenv import load_dotenv
+from flask import Flask, jsonify, redirect, render_template, request
 from pymongo import MongoClient
 
-app = Flask(__name__)
+load_dotenv()
 
-MONGO_URI = "mongodb+srv://krish:12345@cluster0.dnkqm.mongodb.net/?appName=a"
+app = Flask(__name__)
+MONGO_URI = os.getenv("MONGO_URI")
 
 
 @app.route("/", methods=["GET", "POST"])
 def submit_form():
-    error_msg = None
     if request.method == "POST":
         user_data = request.form.get("user_data")
         try:
@@ -17,11 +20,10 @@ def submit_form():
             collection = db["test_collection"]
             collection.insert_one({"data": user_data})
             return redirect("/success")
+        except Exception as e:
+            return render_template("index.html", error="Database error: " + str(e))
 
-        except Exception:
-            error_msg = "Connection failed"
-
-    return render_template("index.html", error=error_msg)
+    return render_template("index.html")
 
 
 @app.route("/success")
@@ -31,16 +33,35 @@ def success():
 
 @app.route("/submittodoitem", methods=["POST"])
 def submit_todo():
-    item_name = request.form.get("itemName")
-    item_description = request.form.get("itemDescription")
+    try:
+        data = request.json
+        if not data:
+            return jsonify({"error": "No JSON data provided"})
 
-    client = MongoClient(MONGO_URI)
-    db = client["test_database"]
-    collection = db["test_collection"]
+        item_name = data.get("itemName")
+        item_description = data.get("itemDescription")
+        item_id = data.get("itemId")
+        item_uuid = data.get("itemUuid")
+        item_hash = data.get("itemHash")
 
-    collection.insert_one({"itemName": item_name, "itemDescription": item_description})
+        client = MongoClient(MONGO_URI)
+        db = client["test_database"]
+        collection = db["test_collection"]
 
-    return "Item added successfully!"
+        collection.insert_one(
+            {
+                "itemName": item_name,
+                "itemDescription": item_description,
+                "itemId": item_id,
+                "itemUuid": item_uuid,
+                "itemHash": item_hash,
+            }
+        )
+
+        return jsonify({"message": "Item added successfully!"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 
 if __name__ == "__main__":
